@@ -14,7 +14,7 @@
     "node": ">=0.10.0"
   },
   "dependencies": {
-	  "node-ssdp": "1.0.1",
+	  "node-ssdp": "2.0.*",
 	  "jstoxml": "0.2",
 	  "node-uuid": "1.4",
 	  "xmldoc": "0.1.2",
@@ -26,7 +26,7 @@
 	  "commander": "2.2",
 	  "ip": "0.3"
 	},
-	"devDependecies": {	 
+	"devDependecies": {
 	},
   "keywords": [
     "Node.js",

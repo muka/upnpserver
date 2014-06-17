@@ -11,11 +11,15 @@ var UPNPServer = require('./lib/upnpServer');
 var PathRepository = require('./lib/pathRepository');
 var MusicRepository = require('./lib/musicRepository');
 
+var DESCRIPTION_PATH = "/DeviceDescription.xml";
+
 var API = function(configuration, paths) {
   assert(configuration === undefined || typeof (configuration) == "object",
       "Invalid configuration parameter '" + configuration + "'");
 
   this.configuration = configuration || {};
+
+  this.configuration.DESCRIPTION_PATH = DESCRIPTION_PATH;
 
   configuration.version = require("./package.json").version;
 
@@ -98,6 +102,7 @@ API.prototype.start = function(callback) {
   this.stop(function() {
     var upnpServer = new UPNPServer(self.configuration.httpPort,
         self.configuration, function(error, upnpServer) {
+
           if (error) {
             callback(error);
             return;
@@ -111,10 +116,20 @@ API.prototype.start = function(callback) {
           }
 
           var ssdpServer = new SSDP.Server({
+
             logLevel : self.configuration.ssdpLogLevel, // 'trace',
             log : self.configuration.ssdpLog,
+
             udn : upnpServer.uuid,
-            description : descURL
+            description : descURL,
+
+            unicastHost: self.configuration.hostname,
+//            upnpServer.port
+            location: "http://" + self.configuration.hostname + ":"
+                    + self.configuration.httpPort
+                    + self.configuration.DESCRIPTION_PATH
+
+
           });
           self.ssdpServer = ssdpServer;
 
@@ -170,11 +185,8 @@ API.prototype.start = function(callback) {
           });
           self.httpServer = httpServer;
 
-          httpServer.listen(upnpServer.port);
-
-          var ssdpHost = self.configuration.hostname;
-
-          ssdpServer.start(ssdpHost, upnpServer.port);
+          httpServer.listen(upnpServer.port, upnpServer.hostname);
+          ssdpServer.start();
 
           self.emit("waiting");
 
