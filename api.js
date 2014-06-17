@@ -188,6 +188,11 @@ API.prototype.start = function(callback) {
           httpServer.listen(upnpServer.port, upnpServer.hostname);
           ssdpServer.start();
 
+          // invalidate other devices cache
+          process.on('exit', function() {
+              self.stop()
+          });
+
           self.emit("waiting");
 
           callback(null);
@@ -206,14 +211,16 @@ API.prototype.stop = function(callback) {
 
   var ssdpServer = this.ssdpServer;
   if (ssdpServer) {
-    this.ssdpServer = undefined;
-    stopped = true;
 
     try {
       ssdpServer.stop();
     } catch (x) {
       // console.error(x);
     }
+    setTimeout(function() {
+        this.ssdpServer = undefined;
+        stopped = true;
+    }, 200);
   }
 
   var httpServer = this.httpServer;
